@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - memory-game
   workflow_dispatch:
 
 # Permissions required for the official GitHub Pages deploy action.
