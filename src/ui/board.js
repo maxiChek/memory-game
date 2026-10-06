@@ -16,6 +16,11 @@ export function renderBoard({ onCardClick }) {
   /** @type {Map<number, HTMLButtonElement>} */
   const nodesById = new Map();
 
+  // Identity of the deck currently rendered into the grid.
+  // resetState() creates a fresh array on every new game,
+  // so a changed reference means "rebuild the grid".
+  let renderedDeck = null;
+
   const grid = el('div', { className: 'board' });
 
   /**
@@ -71,9 +76,9 @@ export function renderBoard({ onCardClick }) {
    * @param {object} state
    */
   function render(state) {
-    // Rebuild if the deck changed (new game).
-    if (grid.children.length !== state.cards.length) {
+    if (state.cards !== renderedDeck) {
       build(state.cards);
+      renderedDeck = state.cards;
     }
 
     for (const card of state.cards) {
