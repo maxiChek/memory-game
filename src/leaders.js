@@ -2,7 +2,7 @@
 // Actual storage access lives in utils/storage.js;
 // this module only turns raw results into view-ready data.
 
-import { compareResults } from './utils/storage.js';
+import { compareResults, MAX_RESULTS } from './utils/storage.js';
 
 /**
  * Format a timestamp as DD.MM.YYYY (no time part).
@@ -24,9 +24,12 @@ export function formatDate(timestamp) {
  * @returns {Array<{ place: number, moves: number, date: string }>}
  */
 export function buildLeaderboardRows(results) {
-  return [...results].sort(compareResults).map((item, index) => ({
-    place: index + 1,
-    moves: item.moves,
-    date: formatDate(item.timestamp),
-  }));
+  return [...results]
+    .sort(compareResults)
+    .slice(0, MAX_RESULTS)
+    .map((item, index) => ({
+      place: index + 1,
+      moves: item.moves,
+      date: formatDate(item.timestamp),
+    }));
 }

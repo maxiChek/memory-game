@@ -3,7 +3,7 @@
 // All access to localStorage goes through this module.
 
 const STORAGE_KEY = 'memory-game:leaderboard';
-const MAX_RESULTS = 10;
+export const MAX_RESULTS = 10;
 
 /**
  * @typedef {Object} GameResult
@@ -63,7 +63,14 @@ export function saveResult(result) {
  * @param {GameResult} a
  * @param {GameResult} b
  */
+// export function compareResults(a, b) {
+//   if (a.moves !== b.moves) return a.moves - b.moves;
+//   return a.timestamp - b.timestamp;
+// }
 export function compareResults(a, b) {
   if (a.moves !== b.moves) return a.moves - b.moves;
-  return a.timestamp - b.timestamp;
+  // When move counts are equal, the EARLIER game ranks higher.
+  if (a.timestamp < b.timestamp) return -1;
+  if (a.timestamp > b.timestamp) return 1;
+  return 0;
 }
