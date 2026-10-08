@@ -1,0 +1,359 @@
+/* Memory Game styles.
+   Layout, card flip animation, and modal presentation. */
+
+:root {
+  --color-bg: #eef2f6;
+  --color-surface: #ffffff;
+  --color-text: #1f2933;
+  --color-muted: #64748b;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-secondary: #e2e8f0;
+  --color-secondary-hover: #cbd5e1;
+  --color-card-back: #334155;
+  --color-card-front: #ffffff;
+  --color-card-border: #94a3b8;
+  --radius: 10px;
+  --gap: 10px;
+  --shadow-card: 0 2px 4px rgba(15, 23, 42, 0.08);
+  --shadow-modal: 0 20px 50px rgba(15, 23, 42, 0.25);
+  --flip-duration: 350ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Block page scroll while a modal is open (class toggled in modal.js). */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* --- Layout -------------------------------------------------------------- */
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.app__main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --- Header -------------------------------------------------------------- */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.header__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.header__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- Buttons ------------------------------------------------------------- */
+
+.btn {
+  padding: 9px 16px;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    transform 80ms ease;
+}
+
+.btn:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn--secondary {
+  color: var(--color-text);
+  background: var(--color-secondary);
+}
+
+.btn--secondary:hover {
+  background: var(--color-secondary-hover);
+}
+
+/* --- Counters ------------------------------------------------------------ */
+
+.counters {
+  display: flex;
+  gap: 24px;
+  padding: 12px 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+.counters__item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.counters__label {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.counters__value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Board --------------------------------------------------------------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+/* Each card is a button that contains a 3D-flipping inner wrapper. */
+
+.card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  perspective: 800px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+.card__inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-duration) ease;
+}
+
+.card--flipped .card__inner {
+  transform: rotateY(180deg);
+}
+
+.card__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14%;
+  border-radius: var(--radius);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.card__face--back {
+  background: var(--color-card-back);
+  color: #cbd5e1;
+}
+
+.card__face--front {
+  background: var(--color-card-front);
+  border: 2px solid var(--color-card-border);
+  transform: rotateY(180deg);
+}
+
+/* Matched pair: subtle highlight, no more pointer feedback. */
+.card--matched {
+  cursor: default;
+}
+
+.card--matched .card__face--front {
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
+}
+
+/* Matched pair: subtle highlight, no more pointer feedback.
+   NOTE: do not use `filter` on .card__inner here — it forces
+   `transform-style: flat` and breaks the 3D flip for matched cards. */
+.card--matched {
+  cursor: default;
+}
+
+.card--matched .card__face--front {
+  border-color: #34d399;
+  box-shadow:
+    0 0 0 2px rgba(52, 211, 153, 0.35),
+    0 0 14px rgba(52, 211, 153, 0.35);
+}
+
+/* --- Modal --------------------------------------------------------------- */
+
+/*
+  Important: no padding on <dialog>, otherwise a click on the padding
+  area counts as a click on the dialog element itself and would close
+  the modal via the backdrop-click handler in modal.js.
+  All spacing lives on the inner .modal__body / .modal__footer.
+*/
+.modal {
+  padding: 0;
+  border: none;
+  border-radius: 14px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-modal);
+  max-width: min(520px, calc(100vw - 32px));
+  width: 100%;
+}
+
+.modal::backdrop {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.modal__body {
+  padding: 24px 24px 8px;
+}
+
+.modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px 24px;
+}
+
+.modal__title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+}
+
+.modal__text {
+  margin: 0 0 8px;
+  color: var(--color-muted);
+}
+
+/* --- Leaderboard table --------------------------------------------------- */
+
+.leaders {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.leaders__th,
+.leaders__td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaders__th {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.leaders__row:last-child .leaders__td {
+  border-bottom: none;
+}
+
+/* --- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .app {
+    padding: 16px 12px 32px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header__title {
+    font-size: 1.25rem;
+  }
+
+  .header__actions {
+    justify-content: stretch;
+  }
+
+  .header__actions .btn {
+    flex: 1;
+  }
+
+  .counters {
+    gap: 16px;
+  }
+
+  :root {
+    --gap: 8px;
+  }
+
+  .modal__body {
+    padding: 20px 18px 4px;
+  }
+
+  .modal__footer {
+    padding: 12px 18px 20px;
+  }
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .card__inner {
+    transition: none;
+  }
+}
